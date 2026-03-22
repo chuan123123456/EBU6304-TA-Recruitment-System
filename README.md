@@ -13,6 +13,45 @@ Software Engineering Group Project for EBU6304 – Teaching Assistant Recruitmen
 | Xianggan Xu | Gnaixux | 2023213306 | 231221412 | jp2023213306@qmul.ac.uk |
 | Zhibo Zhang | iapetuszzb | 2023213278 | 231221777 | jp2023213278@qmul.ac.uk |
 
+## Group Task Allocation
+
+To improve development efficiency, Group40 assigned each member to take primary responsibility for a core module. These responsibilities reflect the main implementation focus of each member, while all members were still expected to contribute across the project lifecycle through discussion, integration, testing, and refinement.
+
+Haocheng Gao – User and Identity Module & Style Framework
+- System styling and UI framework
+- Login functionality
+- Role management
+- Account information management
+
+Zhibo Zhang – Applicant Profile and CV Module
+- Profile editing
+- CV file upload
+- CV management
+
+Chuan Yu – Job Browsing and Application Module
+- Job list
+- Job details
+- Application submission
+- My applications
+
+Xinshuang Liu – MO Job Management Module
+- Create job postings
+- Edit job postings
+- Close job postings
+- Job status management
+
+Xianggan Xu – Review and Offer Module
+- View applicants
+- Review decisions
+- Matching explanations
+- Offer result flow management
+
+Ziqi Gao – Administrator Monitoring and Reporting Module
+- Dashboard
+- Workload statistics
+- Export reports
+- Audit logs
+
 ## Project Overview
 
 EBU6304-TA-Recruitment-System is a web-based system developed for the Teaching Assistant recruitment process in a university setting. The project aims to improve the efficiency and organisation of TA recruitment by providing a clearer and more structured workflow for all participants.
