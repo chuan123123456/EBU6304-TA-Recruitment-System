@@ -82,7 +82,8 @@ public final class JobApplyDialog {
         Label stmtTitle = new Label("Application Statement");
         stmtTitle.setStyle("-fx-font-size: 12px; -fx-font-weight: 800; -fx-text-fill: #334155;");
 
-        Label stmtHint = new Label("请说明您的申请原因和特长（英语）");
+        Label stmtHint = new Label(
+                "Briefly explain why you are applying and what strengths you bring. Please write in English.");
         stmtHint.setWrapText(true);
         stmtHint.setStyle("-fx-font-size: 11px; -fx-text-fill: #94a3b8;");
 
