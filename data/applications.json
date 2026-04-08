@@ -74,7 +74,7 @@
   "applicantId" : "A001",
   "applyDate" : "2026-03-18T09:50:00",
   "statement" : "Interested in project clinics.",
-  "status" : "REJECTED",
+  "status" : "ACCEPTED",
   "decisionNote" : "Position already filled",
   "matchScore" : 70,
   "missingSkills" : [ ]
@@ -118,4 +118,14 @@
   "decisionNote" : "",
   "matchScore" : 20,
   "missingSkills" : [ "Electronics" ]
+}, {
+  "applicationId" : "APP013",
+  "jobId" : "J104",
+  "applicantId" : "A001",
+  "applyDate" : "2026-04-08T12:43:52.164265",
+  "statement" : "",
+  "status" : "SUBMITTED",
+  "decisionNote" : "",
+  "matchScore" : 20,
+  "missingSkills" : [ "Python" ]
 } ]

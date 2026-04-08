@@ -345,46 +345,12 @@ public class JobEditorController {
         });
     }
 
-    private void configureStatusSelector(ChoiceBox<JobStatus> statusBox) {
-        if (!statusBox.getStyleClass().contains("status-selector")) {
-            statusBox.getStyleClass().add("status-selector");
-        }
-        statusBox.setConverter(new javafx.util.StringConverter<>() {
-            @Override
-            public String toString(JobStatus object) {
-                return object == null ? "" : object.name();
-            }
-
-            @Override
-            public JobStatus fromString(String string) {
-                return string == null || string.isBlank() ? null : JobStatus.valueOf(string);
-            }
-        });
-    }
-
-    private void configureTypeSelector(ChoiceBox<JobType> typeBox) {
-        if (!typeBox.getStyleClass().contains("status-selector")) {
-            typeBox.getStyleClass().add("status-selector");
-        }
-        typeBox.setConverter(new javafx.util.StringConverter<>() {
-            @Override
-            public String toString(JobType object) {
-                return object == null ? "" : object.name();
-            }
-
-            @Override
-            public JobType fromString(String string) {
-                return string == null || string.isBlank() ? null : JobType.valueOf(string);
-            }
-        });
-    }
-
     private void submitWithStatus(EditorFields fields,
                                   Job source,
                                   JobStatus targetStatus,
                                   Stage stage,
                                   AtomicReference<Job> result) {
-        List<String> errors = validate(fields, organiserId, targetStatus);
+        List<String> errors = validate(fields, targetStatus);
         if (!errors.isEmpty()) {
             DialogControllerFactory.validationError(String.join("\n", errors), stage.getOwner());
             return;
@@ -394,7 +360,7 @@ public class JobEditorController {
         stage.close();
     }
 
-    private List<String> validate(EditorFields fields, String organiserId, JobStatus targetStatus) {
+    private List<String> validate(EditorFields fields, JobStatus targetStatus) {
         List<String> errors = new ArrayList<>();
         if (fields.title.getText() == null || fields.title.getText().isBlank()) {
             errors.add("Title is required.");

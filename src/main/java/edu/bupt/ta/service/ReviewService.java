@@ -152,7 +152,7 @@ public class ReviewService {
         if (application.getStatus() == ApplicationStatus.SUBMITTED) {
             application.setStatus(ApplicationStatus.UNDER_REVIEW);
             applicationRepository.save(application);
-            auditLogRepository.append(new AuditLogEntry(DateTimeUtils.now(), organiserId,
+            auditLogRepository.append(new AuditLogEntry(DateTimeUtils.now(), actorUserId,
                 "MARK_UNDER_REVIEW", applicationId + " moved to UNDER_REVIEW"));
         }
 
@@ -196,6 +196,8 @@ public class ReviewService {
 
     private boolean hasReviewPermission(Job job, String actorUserId, boolean adminOverride) {
         return adminOverride || actorUserId != null && actorUserId.equals(job.getOrganiserId());
+    }
+
     private ValidationResult validateStatusTransition(ApplicationStatus current, ApplicationStatus target) {
         if (target == null) {
             return ValidationResult.fail("Target status is required.");
