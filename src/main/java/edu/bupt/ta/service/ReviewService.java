@@ -58,6 +58,13 @@ public class ReviewService {
     }
 
     public ValidationResult acceptApplication(String applicationId, String organiserId, String decisionNote) {
+        return acceptApplication(applicationId, organiserId, decisionNote, false);
+    }
+
+    public ValidationResult acceptApplication(String applicationId,
+                                              String actorUserId,
+                                              String decisionNote,
+                                              boolean adminOverride) {
         Optional<Application> appOpt = applicationRepository.findById(applicationId);
         if (appOpt.isEmpty()) {
             return ValidationResult.fail("Application not found.");
@@ -70,7 +77,7 @@ public class ReviewService {
         }
 
         Job job = jobOpt.get();
-        if (!organiserId.equals(job.getOrganiserId())) {
+        if (!hasReviewPermission(job, actorUserId, adminOverride)) {
             return ValidationResult.fail("Permission denied: not your job.");
         }
 
@@ -84,12 +91,19 @@ public class ReviewService {
         applicationRepository.save(application);
 
         workloadService.refreshWorkloadForApplicant(application.getApplicantId());
-        auditLogRepository.append(new AuditLogEntry(DateTimeUtils.now(), organiserId,
+        auditLogRepository.append(new AuditLogEntry(DateTimeUtils.now(), actorUserId,
                 "ACCEPT_APPLICATION", applicationId + " accepted"));
         return ValidationResult.ok();
     }
 
     public ValidationResult rejectApplication(String applicationId, String organiserId, String decisionNote) {
+        return rejectApplication(applicationId, organiserId, decisionNote, false);
+    }
+
+    public ValidationResult rejectApplication(String applicationId,
+                                              String actorUserId,
+                                              String decisionNote,
+                                              boolean adminOverride) {
         Optional<Application> appOpt = applicationRepository.findById(applicationId);
         if (appOpt.isEmpty()) {
             return ValidationResult.fail("Application not found.");
@@ -102,7 +116,7 @@ public class ReviewService {
         }
 
         Job job = jobOpt.get();
-        if (!organiserId.equals(job.getOrganiserId())) {
+        if (!hasReviewPermission(job, actorUserId, adminOverride)) {
             return ValidationResult.fail("Permission denied: not your job.");
         }
 
@@ -115,24 +129,30 @@ public class ReviewService {
         application.setDecisionNote(decisionNote == null ? "" : decisionNote.trim());
         applicationRepository.save(application);
 
-        auditLogRepository.append(new AuditLogEntry(DateTimeUtils.now(), organiserId,
+        auditLogRepository.append(new AuditLogEntry(DateTimeUtils.now(), actorUserId,
                 "REJECT_APPLICATION", applicationId + " rejected"));
         return ValidationResult.ok();
     }
 
     public ApplicantReviewDTO getApplicantReviewData(String applicationId, String organiserId) {
+        return getApplicantReviewData(applicationId, organiserId, false);
+    }
+
+    public ApplicantReviewDTO getApplicantReviewData(String applicationId,
+                                                     String actorUserId,
+                                                     boolean adminOverride) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new IllegalArgumentException("Application not found."));
         Job job = jobRepository.findById(application.getJobId())
                 .orElseThrow(() -> new IllegalArgumentException("Job not found."));
-        if (!organiserId.equals(job.getOrganiserId())) {
+        if (!hasReviewPermission(job, actorUserId, adminOverride)) {
             throw new IllegalArgumentException("Permission denied.");
         }
 
         if (application.getStatus() == ApplicationStatus.SUBMITTED) {
             application.setStatus(ApplicationStatus.UNDER_REVIEW);
             applicationRepository.save(application);
-            auditLogRepository.append(new AuditLogEntry(DateTimeUtils.now(), organiserId,
+            auditLogRepository.append(new AuditLogEntry(DateTimeUtils.now(), actorUserId,
                 "MARK_UNDER_REVIEW", applicationId + " moved to UNDER_REVIEW"));
         }
 
@@ -143,8 +163,6 @@ public class ReviewService {
         ResumeInfo resume = resumeInfoRepository.findByApplicantId(applicantId).orElse(new ResumeInfo());
         WorkloadSummaryDTO workload = workloadService.getWorkload(applicantId);
         int projected = workloadService.calculateProjectedHours(applicantId, job.getJobId());
-
-        String decisionNote = application.getDecisionNote() == null ? "" : application.getDecisionNote();
 
         MatchExplanationDTO match = getMatchExplanationIfAvailable(applicantId, job.getJobId()).orElse(null);
         List<String> matchedSkills = (match == null)
@@ -166,11 +184,14 @@ public class ReviewService {
                 workloadService.calculateRiskLevel(projected, workload.maxWeeklyHours()).name(),
                 application.getStatement(),
                 application.getMatchScore(),
-            application.getMissingSkills() == null ? List.of() : application.getMissingSkills(),
-            matchedSkills,
-            matchExplanation,
-            decisionNote
+                application.getMissingSkills() == null ? List.of() : application.getMissingSkills(),
+                matchedSkills,
+                matchExplanation
         );
+    }
+
+    private boolean hasReviewPermission(Job job, String actorUserId, boolean adminOverride) {
+        return adminOverride || actorUserId != null && actorUserId.equals(job.getOrganiserId());
     }
 
     private ValidationResult validateStatusTransition(ApplicationStatus current, ApplicationStatus target) {
@@ -215,7 +236,7 @@ public class ReviewService {
                 }
                 yield ValidationResult.fail("Invalid status transition from " + current.name() + " to REJECTED.");
             }
-            case SUBMITTED, UNDER_REVIEW -> ValidationResult.fail(
+            case SUBMITTED, UNDER_REVIEW, CANCELLED -> ValidationResult.fail(
                     "Direct transition to " + target.name() + " is not supported here.");
         };
     }
