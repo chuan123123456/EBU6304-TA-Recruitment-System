@@ -596,6 +596,36 @@
     -fx-padding: 4 10 4 10;
 }
 
+.detail-scroll {
+    -fx-background-color: white;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-padding: 0;
+}
+
+.detail-scroll > .viewport {
+    -fx-background-color: white;
+}
+
+.detail-scroll > .corner {
+    -fx-background-color: white;
+}
+
+.detail-scroll .scroll-bar:vertical {
+    -fx-background-color: white;
+}
+
+.detail-scroll .scroll-bar:vertical .track {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 999;
+}
+
+.detail-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: #cbd5e1;
+    -fx-background-radius: 999;
+}
+
 /* Dialogs */
 .dialog-pane.ta-dialog {
     -fx-background-color: white;
