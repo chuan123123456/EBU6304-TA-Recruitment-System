@@ -478,6 +478,22 @@
     -fx-text-fill: #0f172a;
 }
 
+.table-view.job-table-spaced {
+    -fx-padding: 10;
+}
+
+.table-view.job-table-spaced .column-header-background {
+    -fx-background-radius: 12 12 0 0;
+}
+
+.table-view.job-table-spaced .table-row-cell {
+    -fx-background-insets: 0 0 8 0;
+}
+
+.table-view.job-table-spaced .table-cell {
+    -fx-padding: 14 12 14 12;
+}
+
 .detail-scroll {
     -fx-background-color: white;
     -fx-border-color: #e2e8f0;
@@ -504,6 +520,64 @@
 }
 
 .detail-scroll .scroll-bar:vertical .thumb {
+    -fx-background-color: #cbd5e1;
+    -fx-background-radius: 999;
+}
+
+.detail-scroll-plain {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-background-radius: 0;
+    -fx-border-radius: 0;
+    -fx-padding: 0;
+}
+
+.detail-scroll-plain > .viewport {
+    -fx-background-color: transparent;
+}
+
+.detail-scroll-plain > .corner {
+    -fx-background-color: transparent;
+}
+
+.detail-scroll-plain .scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+
+.detail-scroll-plain .scroll-bar:vertical .track {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 999;
+}
+
+.detail-scroll-plain .scroll-bar:vertical .thumb {
+    -fx-background-color: #cbd5e1;
+    -fx-background-radius: 999;
+}
+
+.form-scroll {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.form-scroll > .viewport {
+    -fx-background-color: #f8fafc;
+}
+
+.form-scroll > .corner {
+    -fx-background-color: #f8fafc;
+}
+
+.form-scroll .scroll-bar:vertical {
+    -fx-background-color: #f8fafc;
+}
+
+.form-scroll .scroll-bar:vertical .track {
+    -fx-background-color: #eef2f7;
+    -fx-background-radius: 999;
+}
+
+.form-scroll .scroll-bar:vertical .thumb {
     -fx-background-color: #cbd5e1;
     -fx-background-radius: 999;
 }
@@ -607,6 +681,154 @@
     -fx-font-weight: 800;
     -fx-background-radius: 999;
     -fx-padding: 4 10 4 10;
+}
+
+.accent-panel {
+    -fx-background-color: linear-gradient(to bottom right, #17c6ab, #10bfa4);
+    -fx-background-radius: 16;
+    -fx-border-radius: 16;
+    -fx-effect: dropshadow(gaussian, rgba(16,191,164,0.18), 22, 0.12, 0, 6);
+}
+
+.dashboard-action-button {
+    -fx-background-color: rgba(255,255,255,0.12);
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 11 14 11 14;
+}
+
+.dashboard-action-button:hover {
+    -fx-background-color: rgba(255,255,255,0.18);
+}
+
+.tiny-kicker {
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #94a3b8;
+    -fx-letter-spacing: 0.9px;
+}
+
+.mini-pill {
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+    -fx-background-radius: 999;
+    -fx-padding: 3 8 3 8;
+}
+
+.mini-pill-success {
+    -fx-background-color: #ecfdf3;
+    -fx-text-fill: #10b981;
+}
+
+.mini-pill-info {
+    -fx-background-color: #eff6ff;
+    -fx-text-fill: #2563eb;
+}
+
+.mini-pill-warning {
+    -fx-background-color: #fff7ed;
+    -fx-text-fill: #f59e0b;
+}
+
+.mini-pill-danger {
+    -fx-background-color: #fff1f2;
+    -fx-text-fill: #ef4444;
+}
+
+.mini-pill-neutral {
+    -fx-background-color: #f1f5f9;
+    -fx-text-fill: #64748b;
+}
+
+.list-card {
+    -fx-background-color: white;
+    -fx-border-color: #e7edf5;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+}
+
+.list-card-selected {
+    -fx-background-color: #fbfffe;
+    -fx-border-color: #14b8a6;
+    -fx-border-width: 2;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+}
+
+.soft-info-card {
+    -fx-background-color: #f8fbfd;
+    -fx-border-color: #e7edf5;
+    -fx-border-radius: 14;
+    -fx-background-radius: 14;
+}
+
+.button.skill-chip-button {
+    -fx-background-color: #eef2f7;
+    -fx-text-fill: #334155;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-background-radius: 999;
+    -fx-border-radius: 999;
+    -fx-padding: 8 14 8 14;
+}
+
+.button.skill-chip-button:hover {
+    -fx-background-color: #e2e8f0;
+}
+
+.button.skill-add-button {
+    -fx-background-color: white;
+    -fx-border-color: #cbd5e1;
+    -fx-border-style: segments(4, 4);
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 12px;
+    -fx-font-weight: 700;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 8 14 8 14;
+}
+
+.button.skill-add-button:hover {
+    -fx-background-color: #f8fafc;
+    -fx-text-fill: #64748b;
+}
+
+.radio-button.grade-radio {
+    -fx-font-size: 14px;
+    -fx-text-fill: #334155;
+}
+
+.radio-button.grade-radio .radio {
+    -fx-background-color: white;
+    -fx-border-color: #94a3b8;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 4;
+}
+
+.radio-button.grade-radio:selected .radio {
+    -fx-background-color: #354a5f;
+    -fx-border-color: #354a5f;
+}
+
+.radio-button.grade-radio .dot {
+    -fx-background-color: white;
+    -fx-background-radius: 999;
+    -fx-padding: 3;
+}
+
+.ghost-empty-shell {
+    -fx-background-color: #f8fbfd;
+    -fx-background-radius: 999;
+}
+
+.thin-progress-track {
+    -fx-background-color: #dfe7f1;
+    -fx-background-radius: 999;
 }
 
 .detail-scroll {

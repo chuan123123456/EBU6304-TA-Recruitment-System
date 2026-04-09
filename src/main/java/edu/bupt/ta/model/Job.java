@@ -23,6 +23,7 @@ public class Job implements Identifiable<String> {
     private String semester;
     private JobType type;
     private String description;
+    private String minimumAcademicGrade;
     private List<String> requiredSkills = new ArrayList<>();
     private List<String> preferredSkills = new ArrayList<>();
     private int weeklyHours;
@@ -36,6 +37,7 @@ public class Job implements Identifiable<String> {
     }
 
     public Job(String jobId, String title, String moduleCode, String moduleName, String semester, JobType type, String description,
+               String minimumAcademicGrade,
                List<String> requiredSkills, List<String> preferredSkills, int weeklyHours, int positions,
                LocalDateTime deadline, String organiserId, JobStatus status, LocalDateTime createdAt) {
         this.jobId = jobId;
@@ -45,6 +47,7 @@ public class Job implements Identifiable<String> {
         this.semester = semester;
         this.type = type;
         this.description = description;
+        this.minimumAcademicGrade = minimumAcademicGrade;
         this.requiredSkills = requiredSkills;
         this.preferredSkills = preferredSkills;
         this.weeklyHours = weeklyHours;
@@ -114,6 +117,14 @@ public class Job implements Identifiable<String> {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getMinimumAcademicGrade() {
+        return minimumAcademicGrade;
+    }
+
+    public void setMinimumAcademicGrade(String minimumAcademicGrade) {
+        this.minimumAcademicGrade = minimumAcademicGrade;
     }
 
     public List<String> getRequiredSkills() {

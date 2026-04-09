@@ -14,11 +14,16 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -66,10 +71,15 @@ public class JobEditorController {
         root.getStyleClass().add("app-surface");
 
         VBox leftPanel = new VBox(0);
-        leftPanel.setPrefWidth(960);
-        leftPanel.setMinWidth(900);
+        leftPanel.setPrefWidth(920);
+        leftPanel.setMinWidth(860);
         leftPanel.getChildren().add(buildHeader(fields, source, stage, result));
-        leftPanel.getChildren().add(buildFormContent(fields, !organisers.isEmpty()));
+        ScrollPane formScroll = new ScrollPane(buildFormContent(fields, !organisers.isEmpty()));
+        formScroll.setFitToWidth(true);
+        formScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        formScroll.getStyleClass().add("form-scroll");
+        VBox.setVgrow(formScroll, Priority.ALWAYS);
+        leftPanel.getChildren().add(formScroll);
         HBox.setHgrow(leftPanel, Priority.ALWAYS);
 
         VBox previewPanel = buildPreviewPanel(fields);
@@ -96,7 +106,7 @@ public class JobEditorController {
         header.setStyle("-fx-background-color: white; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 1 0;");
 
         Label title = new Label(source == null ? "Create Job Post" : "Edit Job Post");
-        title.getStyleClass().add("page-title");
+        title.setStyle("-fx-font-size: 26px; -fx-font-weight: 800; -fx-text-fill: #0f172a;");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -117,18 +127,14 @@ public class JobEditorController {
         return header;
     }
 
-private Parent buildFormContent(EditorFields fields, boolean showOrganiserField) {
+    private Parent buildFormContent(EditorFields fields, boolean showOrganiserField) {
         configureNumericField(fields.positions);
-        
+        configureSkillEditor(fields);
+        configureGradeSelectors(fields);
+
         VBox wrapper = new VBox(24);
         wrapper.setPadding(new Insets(24));
-        wrapper.setStyle("-fx-background-color: #ffffff;");
-
-        wrapper.getChildren().add(buildSectionTitle("Basic Job Information"));
-
-        Label requiredHint = new Label("* indicates required fields.");
-        requiredHint.getStyleClass().add("body-muted");
-        wrapper.getChildren().add(requiredHint);
+        wrapper.setStyle("-fx-background-color: #f8fafc;");
 
         GridPane basicGrid = new GridPane();
         basicGrid.setHgap(16);
@@ -155,35 +161,50 @@ private Parent buildFormContent(EditorFields fields, boolean showOrganiserField)
         }
         basicGrid.add(areaField("Job Description / Key Responsibilities", fields.description, 6), 0, descriptionRow, 2, 1);
 
-        wrapper.getChildren().add(basicGrid);
-
-        wrapper.getChildren().add(buildSectionTitle("Skills & Requirements"));
-
         GridPane skillsGrid = new GridPane();
         skillsGrid.setHgap(16);
         skillsGrid.setVgap(14);
         skillsGrid.add(areaField("Required Skills (comma separated)", fields.requiredSkills, 2), 0, 0);
         skillsGrid.add(areaField("Preferred Skills (comma separated)", fields.preferredSkills, 2), 1, 0);
 
+        Label essentialTitle = new Label("Essential Technical Skills");
+        essentialTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: 800; -fx-text-fill: #334155;");
+
+        Label gradeTitle = new Label("Minimum Academic Grade");
+        gradeTitle.setStyle("-fx-font-size: 14px; -fx-font-weight: 800; -fx-text-fill: #334155;");
+
+        HBox gradeRow = new HBox(18, fields.gradeA, fields.gradeB);
+        gradeRow.setAlignment(Pos.CENTER_LEFT);
+
         Label note = new Label("Tip: Include at least one required skill and set the semester clearly.");
         note.getStyleClass().add("body-muted");
 
-        wrapper.getChildren().addAll(skillsGrid, note);
+        VBox basicSection = new VBox(18);
+        basicSection.getStyleClass().add("panel-card");
+        basicSection.setPadding(new Insets(22));
+        basicSection.getChildren().addAll(buildSectionTitle("Basic Job Information"), basicGrid);
+
+        VBox skillSection = new VBox(18);
+        skillSection.getStyleClass().add("panel-card");
+        skillSection.setPadding(new Insets(22));
+        skillSection.getChildren().addAll(buildSectionTitle("Skills & Requirements"), essentialTitle, fields.requiredSkillChips, gradeTitle, gradeRow, skillsGrid, note);
+
+        wrapper.getChildren().addAll(basicSection, skillSection);
         return wrapper;
     }
 
     private VBox buildPreviewPanel(EditorFields fields) {
         VBox preview = new VBox(18);
         preview.setPadding(new Insets(24));
-        preview.setPrefWidth(320);
-        preview.setStyle("-fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 0 1;");
+        preview.setPrefWidth(340);
+        preview.setStyle("-fx-background-color: #ffffff; -fx-border-color: #e2e8f0; -fx-border-width: 0 0 0 1;");
 
         Label heading = new Label("Live Preview Summary");
-        heading.setStyle("-fx-font-size: 14px; -fx-font-weight: 700; -fx-text-fill: #0f172a;");
+        heading.setStyle("-fx-font-size: 16px; -fx-font-weight: 800; -fx-text-fill: #0f172a;");
 
         VBox card = new VBox(4);
         card.setPadding(new Insets(16));
-        card.setStyle("-fx-background-color: #354a5f; -fx-background-radius: 12;");
+        card.setStyle("-fx-background-color: linear-gradient(to bottom right, #354a5f, #243447); -fx-background-radius: 14;");
 
         Label cardCaption = new Label("JOB CARD PREVIEW");
         cardCaption.setStyle("-fx-font-size: 10px; -fx-font-weight: 700; -fx-text-fill: #cbd5e1;");
@@ -224,11 +245,27 @@ private Parent buildFormContent(EditorFields fields, boolean showOrganiserField)
         preferredLine.setWrapText(true);
         preferredLine.setStyle("-fx-font-size: 12px; -fx-text-fill: #475569;");
 
-        requirementCard.getChildren().addAll(requirementTitle, requiredLine, preferredLine);
+        Label gradeLine = new Label();
+        gradeLine.setWrapText(true);
+        gradeLine.setStyle("-fx-font-size: 12px; -fx-text-fill: #475569;");
 
-        preview.getChildren().addAll(heading, card, metrics, requirementCard);
+        requirementCard.getChildren().addAll(requirementTitle, requiredLine, preferredLine, gradeLine);
 
-        Runnable updater = () -> updatePreview(fields, cardTitle, cardMeta, semester, positions, deadline, organiser, requiredLine, preferredLine);
+        VBox editorCard = new VBox(4);
+        editorCard.setPadding(new Insets(12));
+        editorCard.getStyleClass().add("soft-info-card");
+
+        Label editorTitle = new Label("Admin (Last Editor)");
+        editorTitle.setStyle("-fx-font-size: 13px; -fx-font-weight: 700; -fx-text-fill: #334155;");
+
+        Label editorTime = new Label("Updated just now");
+        editorTime.setStyle("-fx-font-size: 12px; -fx-font-weight: 500; -fx-text-fill: #94a3b8;");
+
+        editorCard.getChildren().addAll(editorTitle, editorTime);
+
+        preview.getChildren().addAll(heading, card, metrics, requirementCard, editorCard);
+
+        Runnable updater = () -> updatePreview(fields, cardTitle, cardMeta, semester, positions, deadline, organiser, requiredLine, preferredLine, gradeLine);
 
         bindPreviewListeners(fields, updater);
         updater.run();
@@ -241,9 +278,86 @@ private Parent buildFormContent(EditorFields fields, boolean showOrganiserField)
         box.setPadding(new Insets(0, 0, 4, 0));
         box.setStyle("-fx-border-color: #f1f5f9; -fx-border-width: 0 0 1 0;");
         Label title = new Label(titleText);
-        title.getStyleClass().add("section-title");
+        title.setStyle("-fx-font-size: 18px; -fx-font-weight: 800; -fx-text-fill: #0f172a;");
         box.getChildren().add(title);
         return box;
+    }
+
+    private void configureSkillEditor(EditorFields fields) {
+        fields.requiredSkillChips.setHgap(10);
+        fields.requiredSkillChips.setVgap(10);
+        fields.requiredSkillChips.setPrefWrapLength(640);
+        fields.addSkillButton.getStyleClass().add("skill-add-button");
+        fields.addSkillButton.setOnAction(event -> promptAddSkill(fields));
+        fields.requiredSkills.textProperty().addListener((obs, oldValue, newValue) -> refreshSkillChips(fields));
+        refreshSkillChips(fields);
+    }
+
+    private void refreshSkillChips(EditorFields fields) {
+        fields.requiredSkillChips.getChildren().clear();
+        List<String> skills = parseSkills(fields.requiredSkills.getText());
+        skills.forEach(skill -> fields.requiredSkillChips.getChildren().add(skillChip(fields, skill)));
+        fields.requiredSkillChips.getChildren().add(fields.addSkillButton);
+    }
+
+    private Button skillChip(EditorFields fields, String text) {
+        Button chip = new Button(text + " ×");
+        chip.getStyleClass().add("skill-chip-button");
+        chip.setOnAction(event -> removeSkill(fields, text));
+        return chip;
+    }
+
+    private void promptAddSkill(EditorFields fields) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Add Skill");
+        dialog.setHeaderText("Add one required skill");
+        dialog.setContentText("Skill name:");
+        dialog.getDialogPane().getStyleClass().add("ta-dialog");
+        if (fields.addSkillButton.getScene() != null && fields.addSkillButton.getScene().getWindow() != null) {
+            dialog.initOwner(fields.addSkillButton.getScene().getWindow());
+        }
+        dialog.showAndWait()
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .ifPresent(skill -> addSkill(fields, skill));
+    }
+
+    private void addSkill(EditorFields fields, String skill) {
+        List<String> skills = new ArrayList<>(parseSkills(fields.requiredSkills.getText()));
+        boolean exists = skills.stream().anyMatch(existing -> existing.equalsIgnoreCase(skill));
+        if (!exists) {
+            skills.add(skill);
+            fields.requiredSkills.setText(String.join(", ", skills));
+        }
+    }
+
+    private void removeSkill(EditorFields fields, String skill) {
+        List<String> skills = new ArrayList<>(parseSkills(fields.requiredSkills.getText()));
+        skills.removeIf(existing -> existing.equalsIgnoreCase(skill));
+        fields.requiredSkills.setText(String.join(", ", skills));
+    }
+
+    private void configureGradeSelectors(EditorFields fields) {
+        fields.gradeA.setToggleGroup(fields.minimumGradeGroup);
+        fields.gradeB.setToggleGroup(fields.minimumGradeGroup);
+        fields.gradeA.getStyleClass().add("grade-radio");
+        fields.gradeB.getStyleClass().add("grade-radio");
+        if (!fields.gradeA.isSelected() && !fields.gradeB.isSelected()) {
+            fields.gradeA.setSelected(true);
+        }
+        updateGradeStyles(fields);
+        fields.minimumGradeGroup.selectedToggleProperty().addListener((obs, oldValue, newValue) -> updateGradeStyles(fields));
+    }
+
+    private void updateGradeStyles(EditorFields fields) {
+        styleGradeRadio(fields.gradeA, fields.gradeA.isSelected());
+        styleGradeRadio(fields.gradeB, fields.gradeB.isSelected());
+    }
+
+    private void styleGradeRadio(RadioButton radio, boolean selected) {
+        radio.setStyle(selected
+                ? "-fx-font-size: 14px; -fx-font-weight: 700; -fx-text-fill: #334155;"
+                : "-fx-font-size: 14px; -fx-font-weight: 600; -fx-text-fill: #64748b;");
     }
 
     private VBox field(String labelText, Parent control) {
@@ -306,6 +420,7 @@ private Parent buildFormContent(EditorFields fields, boolean showOrganiserField)
         if (source == null) {
             fields.type.setValue(JobType.MODULE_TA);
             fields.status.setValue(JobStatus.OPEN);
+            fields.gradeA.setSelected(true);
 
             LocalDateTime defaultDeadline = LocalDateTime.now().plusDays(7).withHour(23).withMinute(59).withSecond(0).withNano(0);
             fields.deadline.setValue(defaultDeadline.toLocalDate());
@@ -331,6 +446,11 @@ private Parent buildFormContent(EditorFields fields, boolean showOrganiserField)
         }
         fields.status.setValue(source.getStatus());
         fields.description.setText(source.getDescription());
+        if (fields.gradeB.getText().equalsIgnoreCase(fallback(source.getMinimumAcademicGrade(), ""))) {
+            fields.gradeB.setSelected(true);
+        } else {
+            fields.gradeA.setSelected(true);
+        }
         fields.requiredSkills.setText(String.join(", ", source.getRequiredSkills()));
         fields.preferredSkills.setText(String.join(", ", source.getPreferredSkills()));
         fields.defaultOrganiserId = source.getOrganiserId();
@@ -461,6 +581,7 @@ private Parent buildFormContent(EditorFields fields, boolean showOrganiserField)
         job.setDeadline(LocalDateTime.of(fields.deadline.getValue(), parseTime(fields.deadlineHour.getValue(), fields.deadlineMinute.getValue())));
         job.setStatus(targetStatus == null ? JobStatus.OPEN : targetStatus);
         job.setDescription(trim(fields.description.getText()));
+        job.setMinimumAcademicGrade(selectedMinimumGrade(fields));
         job.setRequiredSkills(parseSkills(fields.requiredSkills.getText()));
         job.setPreferredSkills(parseSkills(fields.preferredSkills.getText()));
         job.setOrganiserId(resolveOrganiserId(fields));
@@ -479,6 +600,7 @@ private Parent buildFormContent(EditorFields fields, boolean showOrganiserField)
         fields.requiredSkills.textProperty().addListener((obs, oldValue, newValue) -> updater.run());
         fields.preferredSkills.textProperty().addListener((obs, oldValue, newValue) -> updater.run());
         fields.organiser.valueProperty().addListener((obs, oldValue, newValue) -> updater.run());
+        fields.minimumGradeGroup.selectedToggleProperty().addListener((obs, oldValue, newValue) -> updater.run());
     }
 
     private void updatePreview(EditorFields fields,
@@ -489,7 +611,8 @@ private Parent buildFormContent(EditorFields fields, boolean showOrganiserField)
                                Label deadline,
                                Label organiser,
                                Label requiredLine,
-                               Label preferredLine) {
+                               Label preferredLine,
+                               Label gradeLine) {
         cardTitle.setText(fallback(fields.title.getText(), "Untitled Job"));
         String module = fallback(fields.moduleCode.getText(), "TBD");
         String moduleName = fallback(fields.moduleName.getText(), "Module Name");
@@ -511,6 +634,7 @@ private Parent buildFormContent(EditorFields fields, boolean showOrganiserField)
         preferredLine.setText(preferredSkills.isEmpty()
                 ? "Preferred skills not set"
                 : "Preferred: " + String.join(", ", capThree(preferredSkills)));
+        gradeLine.setText("Minimum grade: " + selectedMinimumGrade(fields));
     }
 
     private List<String> capThree(List<String> skills) {
@@ -627,6 +751,13 @@ private Parent buildFormContent(EditorFields fields, boolean showOrganiserField)
         return fields.defaultOrganiserId;
     }
 
+    private String selectedMinimumGrade(EditorFields fields) {
+        if (fields.gradeB.isSelected()) {
+            return fields.gradeB.getText();
+        }
+        return fields.gradeA.getText();
+    }
+
     private String formatOrganiserLabel(User organiser) {
         String displayName = organiser.getDisplayName();
         return (displayName == null || displayName.isBlank() ? organiser.getUserId() : displayName)
@@ -648,6 +779,11 @@ private Parent buildFormContent(EditorFields fields, boolean showOrganiserField)
         private final TextArea requiredSkills = new TextArea();
         private final TextArea preferredSkills = new TextArea();
         private final ComboBox<User> organiser = new ComboBox<>();
+        private final FlowPane requiredSkillChips = new FlowPane();
+        private final Button addSkillButton = new Button("+ Add Skill");
+        private final ToggleGroup minimumGradeGroup = new ToggleGroup();
+        private final RadioButton gradeA = new RadioButton("A / 90+");
+        private final RadioButton gradeB = new RadioButton("B+ / 85+");
         private String defaultOrganiserId;
     }
 }
