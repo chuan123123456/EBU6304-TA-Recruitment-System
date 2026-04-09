@@ -26,12 +26,16 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 public class JobBrowserController {
+    private static final DateTimeFormatter DEADLINE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
 
     private final ServiceRegistry services;
     private final User user;
@@ -382,7 +386,7 @@ public class JobBrowserController {
             Label module = new Label(job.getModuleCode() + " | " + job.getModuleName());
             module.setStyle("-fx-font-size: 12px; -fx-font-weight: 600; -fx-text-fill: #00a58a;");
 
-            Label meta = new Label(job.getWeeklyHours() + "h/week   |   Deadline: " + job.getDeadline());
+            Label meta = new Label(item.getWeeklyHours() + "h/week   |   Deadline: " + formatDeadline(item.getDeadline()));
             meta.setStyle("-fx-font-size: 12px; -fx-text-fill: #64748b;");
 
             card.getChildren().addAll(header, module, meta);
@@ -421,5 +425,9 @@ public class JobBrowserController {
             String[] parts = color.split(";");
             return String.format("-fx-font-size: 10px; -fx-font-weight: 700; -fx-text-fill: %s; -fx-background-color: %s; -fx-background-radius: 999; -fx-padding: 2 8 2 8;", parts[0], parts[1]);
         }
+    }
+
+    private static String formatDeadline(LocalDateTime deadline) {
+        return deadline == null ? "-" : deadline.format(DEADLINE_FORMAT);
     }
 }
