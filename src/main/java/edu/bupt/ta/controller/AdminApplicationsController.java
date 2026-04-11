@@ -6,6 +6,7 @@ import edu.bupt.ta.model.ApplicantProfile;
 import edu.bupt.ta.model.ResumeInfo;
 import edu.bupt.ta.model.User;
 import edu.bupt.ta.service.ServiceRegistry;
+import edu.bupt.ta.util.DisplayPlaceholders;
 import edu.bupt.ta.util.ValidationResult;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -17,7 +18,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -33,7 +33,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.nio.file.Path;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
@@ -176,7 +175,6 @@ public class AdminApplicationsController {
         VBox queuePanel = new VBox(12);
         queuePanel.getStyleClass().add("panel-card");
         queuePanel.setPadding(new Insets(18));
-        queuePanel.setPrefWidth(420);
 
         Label queueTitle = new Label("Application Queue");
         queueTitle.setStyle("-fx-font-size: 16px; -fx-font-weight: 900; -fx-text-fill: #1e293b;");
@@ -198,15 +196,13 @@ public class AdminApplicationsController {
                 AdminApplicationRowDTO row = getTableView().getItems().get(getIndex());
 
                 Label name = new Label(row.applicantName());
-                name.setWrapText(false);
-                name.setTextOverrun(OverrunStyle.ELLIPSIS);
-                name.setMaxWidth(220);
+                name.setWrapText(true);
+                name.setMaxWidth(420);
                 name.setStyle("-fx-font-size: 14px; -fx-font-weight: 900; -fx-text-fill: #334155;");
 
                 Label meta = new Label(row.jobTitle() + "  |  " + row.applicationId());
-                meta.setWrapText(false);
-                meta.setTextOverrun(OverrunStyle.ELLIPSIS);
-                meta.setMaxWidth(220);
+                meta.setWrapText(true);
+                meta.setMaxWidth(420);
                 meta.setStyle("-fx-font-size: 11px; -fx-text-fill: #94a3b8;");
 
                 setGraphic(new VBox(3, name, meta));
@@ -238,7 +234,7 @@ public class AdminApplicationsController {
             @Override
             protected void updateItem(Number item, boolean empty) {
                 super.updateItem(item, empty);
-                setText(empty || item == null ? null : item.intValue() + "%");
+                setText(empty || item == null ? null : DisplayPlaceholders.MATCH_VALUE);
                 if (!empty) {
                     setStyle("-fx-font-weight: 900; -fx-text-fill: #334155;");
                 } else {
@@ -266,35 +262,45 @@ public class AdminApplicationsController {
             }
         });
 
-        applicantCol.setPrefWidth(250);
+        TableColumn<AdminApplicationRowDTO, String> detailCol = new TableColumn<>("DETAIL");
+        detailCol.setCellValueFactory(cell -> new SimpleStringProperty("Detail"));
+        detailCol.setCellFactory(column -> new TableCell<>() {
+            private final Button detailButton = new Button("Detail");
+
+            {
+                detailButton.getStyleClass().add("secondary-button");
+            }
+
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || getIndex() < 0 || getIndex() >= getTableView().getItems().size()) {
+                    setGraphic(null);
+                    setText(null);
+                    return;
+                }
+
+                AdminApplicationRowDTO row = getTableView().getItems().get(getIndex());
+                detailButton.setOnAction(event -> showApplicationDetailWindow(row));
+                setGraphic(detailButton);
+                setText(null);
+            }
+        });
+
+        applicantCol.setPrefWidth(420);
         statusCol.setPrefWidth(120);
         matchCol.setPrefWidth(90);
         riskCol.setPrefWidth(100);
-        table.getColumns().setAll(applicantCol, statusCol, matchCol, riskCol);
+        detailCol.setPrefWidth(120);
+        table.getColumns().setAll(applicantCol, statusCol, matchCol, riskCol, detailCol);
+        table.getStyleClass().add("job-table-spaced");
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
-        table.setFixedCellSize(76);
         table.setPrefHeight(680);
         table.setPlaceholder(new Label("No applications match the current filters."));
-        table.getSelectionModel().selectedItemProperty().addListener((obs, oldApp, newApp) -> {
-            updateActionButtons(newApp);
-            updateDetail(newApp);
-        });
 
         queuePanel.getChildren().addAll(queueTitle, queueSubtitle, table);
-
-        ScrollPane reviewScroll = new ScrollPane(buildReviewWorkspace());
-        reviewScroll.setFitToWidth(true);
-        reviewScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        reviewScroll.getStyleClass().add("detail-scroll");
-
-        VBox reviewPanel = new VBox(reviewScroll);
-        reviewPanel.getStyleClass().add("panel-card");
-        reviewPanel.setPadding(new Insets(16));
-        VBox.setVgrow(reviewScroll, Priority.ALWAYS);
-        HBox.setHgrow(reviewPanel, Priority.ALWAYS);
-
-        HBox body = new HBox(16, queuePanel, reviewPanel);
-        HBox.setHgrow(reviewPanel, Priority.ALWAYS);
+        HBox.setHgrow(queuePanel, Priority.ALWAYS);
+        HBox body = new HBox(queuePanel);
         return body;
     }
 
@@ -461,7 +467,7 @@ public class AdminApplicationsController {
         programmeValue.setText(blankToDash(profile.getProgramme()) + (profile.getYear() > 0 ? " (Year " + profile.getYear() + ")" : ""));
         emailValue.setText(blankToDash(profile.getEmail()));
         phoneValue.setText(blankToDash(profile.getPhone()));
-        matchScoreValue.setText(application.matchScore() + "%");
+        matchScoreValue.setText(DisplayPlaceholders.MATCH_VALUE);
         workloadValue.setText("Current " + application.currentWeeklyHours() + "h/week -> Projected "
                 + application.projectedWeeklyHours() + "h/week (" + application.riskLevel() + ")");
         statementValue.setText(blankToDash(reviewData.statement()));
@@ -498,7 +504,10 @@ public class AdminApplicationsController {
             showError("Please select one application first.");
             return;
         }
+        openReview(selected);
+    }
 
+    private void openReview(AdminApplicationRowDTO selected) {
         Stage stage = new Stage();
         stage.initModality(Modality.APPLICATION_MODAL);
         if (view.getScene() != null) {
@@ -522,7 +531,10 @@ public class AdminApplicationsController {
             showError("Please select one application first.");
             return;
         }
+        quickAccept(selected, decisionNoteInput.getText(), null);
+    }
 
+    private boolean quickAccept(AdminApplicationRowDTO selected, String decisionNote, Stage detailStage) {
         if ("HIGH".equalsIgnoreCase(selected.riskLevel())) {
             DialogControllerFactory.workloadWarning(
                     "Projected hours: " + selected.projectedWeeklyHours() + "h/week.",
@@ -534,12 +546,16 @@ public class AdminApplicationsController {
                 "Accept this applicant and update workload records?",
                 view.getScene() == null ? null : view.getScene().getWindow());
         if (!confirmed) {
-            return;
+            return false;
         }
 
         ValidationResult result = services.reviewService()
-                .acceptApplication(selected.applicationId(), user.getUserId(), decisionNoteInput.getText(), true);
-        showActionResult("Accept Application", result);
+                .acceptApplication(selected.applicationId(), user.getUserId(), decisionNote, true);
+        boolean success = showActionResult("Accept Application", result);
+        if (success && detailStage != null) {
+            detailStage.close();
+        }
+        return success;
     }
 
     private void quickReject() {
@@ -548,29 +564,37 @@ public class AdminApplicationsController {
             showError("Please select one application first.");
             return;
         }
+        quickReject(selected, decisionNoteInput.getText(), null);
+    }
 
+    private boolean quickReject(AdminApplicationRowDTO selected, String decisionNote, Stage detailStage) {
         boolean confirmed = DialogControllerFactory.confirmAction(
                 "Reject Candidate",
                 "Reject this applicant for the selected job?",
                 view.getScene() == null ? null : view.getScene().getWindow());
         if (!confirmed) {
-            return;
+            return false;
         }
 
         ValidationResult result = services.reviewService()
-                .rejectApplication(selected.applicationId(), user.getUserId(), decisionNoteInput.getText(), true);
-        showActionResult("Reject Application", result);
+                .rejectApplication(selected.applicationId(), user.getUserId(), decisionNote, true);
+        boolean success = showActionResult("Reject Application", result);
+        if (success && detailStage != null) {
+            detailStage.close();
+        }
+        return success;
     }
 
-    private void showActionResult(String header, ValidationResult result) {
+    private boolean showActionResult(String header, ValidationResult result) {
         if (!result.isValid()) {
             DialogControllerFactory.operationFailed(header, String.join("\n", result.getErrors()),
                     view.getScene() == null ? null : view.getScene().getWindow());
-            return;
+            return false;
         }
         DialogControllerFactory.success(header, "Operation completed.",
                 view.getScene() == null ? null : view.getScene().getWindow());
         refresh();
+        return true;
     }
 
     private Parent infoGridRow(String titleA, Label valueA,
@@ -684,5 +708,54 @@ public class AdminApplicationsController {
 
     private String blankToDash(String value) {
         return value == null || value.isBlank() ? "-" : value;
+    }
+
+    private void showApplicationDetailWindow(AdminApplicationRowDTO application) {
+        if (application == null) {
+            showError("Please select one application first.");
+            return;
+        }
+
+        table.getSelectionModel().select(application);
+        updateDetail(application);
+        updateActionButtons(application);
+
+        Stage stage = new Stage();
+        stage.initModality(Modality.APPLICATION_MODAL);
+        if (view.getScene() != null) {
+            stage.initOwner(view.getScene().getWindow());
+        }
+        stage.setTitle("Application Detail");
+
+        VBox workspace = buildReviewWorkspace();
+
+        openReviewButton.getStyleClass().add("secondary-button");
+        openReviewButton.setOnAction(event -> openReview(application));
+
+        acceptButton.getStyleClass().add("primary-button");
+        acceptButton.setStyle("-fx-background-color: #14c7b1; -fx-text-fill: white; -fx-font-weight: 900; -fx-background-radius: 10; -fx-padding: 12 24 12 24;");
+        acceptButton.setOnAction(event -> quickAccept(application, decisionNoteInput.getText(), stage));
+
+        rejectButton.getStyleClass().add("danger-outline");
+        rejectButton.setStyle("-fx-background-color: white; -fx-border-color: #fca5a5; -fx-text-fill: #ef4444; -fx-font-weight: 900; -fx-background-radius: 10; -fx-border-radius: 10; -fx-padding: 12 24 12 24;");
+        rejectButton.setOnAction(event -> quickReject(application, decisionNoteInput.getText(), stage));
+
+        ScrollPane reviewScroll = new ScrollPane(workspace);
+        reviewScroll.setFitToWidth(true);
+        reviewScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        reviewScroll.getStyleClass().add("detail-scroll");
+
+        VBox reviewPanel = new VBox(reviewScroll);
+        reviewPanel.getStyleClass().addAll("app-surface", "panel-card");
+        reviewPanel.setPadding(new Insets(16));
+        VBox.setVgrow(reviewScroll, Priority.ALWAYS);
+
+        Scene scene = new Scene(reviewPanel, 1120, 840);
+        if (AdminApplicationsController.class.getResource("/styles/app.css") != null) {
+            scene.getStylesheets().add(AdminApplicationsController.class.getResource("/styles/app.css").toExternalForm());
+        }
+        stage.setScene(scene);
+        stage.showAndWait();
+        refresh();
     }
 }
